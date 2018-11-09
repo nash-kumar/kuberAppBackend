@@ -22,7 +22,7 @@ UserSchema.pre('save', function (next) {
 module.exports = mongoose.model('User', UserSchema);
 
 const Users = mongoose.model('user', UserSchema);
-UserSchema.plugin(AutoIncrement, { inc_field: 'id' });
+// UserSchema.plugin(AutoIncrement, { inc_field: 'id' });
 module.exports = {
     userModel: Users,
     UserSchema: UserSchema

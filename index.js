@@ -16,7 +16,7 @@ app.use(cors());
   else console.log("SuccessFully Connected");
 });
 
-const user = require('./routing/route');
+const user = require('./routes/route');
 
 app.get('/',(req,res)=> res.render('index'));
 app.set('view engine','ejs');

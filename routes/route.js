@@ -2,17 +2,14 @@ const express=require('express');
 const router=express.Router();
 module.exports=router;
 const userModel=require('../model/model').userModel;
-
-const express = require('express');
-const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const userModel = require('../model/model').userModel;
+
 const async = require('async');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
-module.exports = router;
+
 
 //REGISTRATION-API
 router.post('/register', (req, res) => {
@@ -65,7 +62,7 @@ router.post('/login', (req, res) => {
 });
 
 //CARD-API
-router.post('/card', (res,req) => {
+router.post('/card', (req,res) => {
     if (req.body.data) {
         const user = userModel({
              creditCard: req.body.data.creditCard,
@@ -109,7 +106,7 @@ router.post('/forgot', function (req, res, next) {
             });
         },
         function (token, done) {
-            userModel.findOne({ email: req.body.data.user.email }, function (err, user) {
+            userModel.findOne({ email: req.body.data.email }, function (err, user) {
               if(err){
                 next(err);
               }
@@ -140,8 +137,8 @@ router.post('/forgot', function (req, res, next) {
                 }
             });
             var mailOptions = {
-                to: req.body.data.user.email,
-                from: 'accionlabs136@gmail.com',
+                to: req.body.data.email,
+                from: Email,
                 subject: 'Password Reset',
                 text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
                     'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
@@ -181,7 +178,7 @@ router.post('/reset/:token', function(req, res) {
               debugger;
              res.json({success:false, message:'Password reset token is invalid or has expired.'});
           } else {
-            user.password = req.body.data.user.password;
+            user.password = req.body.data.password;
             user.resetPasswordToken = undefined;
             user.resetPasswordExpires = undefined;
             
