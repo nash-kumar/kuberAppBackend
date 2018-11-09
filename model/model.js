@@ -9,7 +9,9 @@ const UserSchema = mongoose.Schema({
     email: { type: String, unique: true },
     password: String,
     resetPasswordToken: String,
-    resetPasswordExpires: Date
+    resetPasswordExpires: Date,
+    creditCard:Number,
+    debitCard:Number
 });
 
 UserSchema.pre('save', function (next) {
