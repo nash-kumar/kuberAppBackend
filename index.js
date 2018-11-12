@@ -3,6 +3,8 @@ const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
 const ejs=require('ejs');
+const passport = require('passport');
+const passportSetup = require('./config/passport')
 
 require('dotenv').config();
 app.use(express.json());
@@ -18,12 +20,21 @@ app.use(cors());
 
 const user = require('./routes/route');
 
-app.get('/',(req,res)=> res.render('index'));
+// app.get('/',(req,res)=> res.render('index'));
 app.set('view engine','ejs');
 
 app.use(express.static('../public'));
 
 app.use('/user', user)
+
+// set view engine
+// app.set('view engine', 'ejs');
+
+
+// create home route
+app.get('/', (req, res) => {
+    res.render('home');
+});
 
 function validateUser(req, res, next) {
   jwt.verify(req.headers['x-access-token'], req.app.get('secretKey'), function (err, decoded) {

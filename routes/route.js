@@ -1,6 +1,5 @@
 const express=require('express');
 const router=express.Router();
-module.exports=router;
 const userModel=require('../model/model').userModel;
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -8,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const async = require('async');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const passport = require('passport');
 
 
 
@@ -42,9 +42,9 @@ router.post('/register', (req, res) => {
 router.post('/login', (req, res) => {
     const email = req.body.data.email;
     var password = req.body.password;
-
+    
     userModel.findOne({ email: req.body.data.email }, function (err, userInfo) {
-
+        
         if (err) {
             next(err);
         } if (userInfo) {
@@ -61,12 +61,32 @@ router.post('/login', (req, res) => {
     });
 });
 
+// auth login
+router.get('/login', (req, res) => {
+    res.render('login', { user: req.user });
+});
+
+// auth logout
+router.get('/logout', (req, res) => {
+    // handle with passport
+    res.send('logging out');
+});
+
+//auth with google
+router.get('/google', passport.authenticate('google', {
+    scope:['profile']
+}));
+
+//callback for 
+router.get('/google/redirect', passport.authenticate('google'), (req, res)=>{
+    res.send('You have done');
+});
 //CARD-API
 router.post('/card', (req,res) => {
     if (req.body.data) {
         const user = userModel({
-             creditCard: req.body.data.creditCard,
-             debitCard: req.body.data.debitCard,
+            creditCard: req.body.data.creditCard,
+            debitCard: req.body.data.debitCard,
         });
         user.save((err, result) => {
             if (err) {
@@ -107,22 +127,22 @@ router.post('/forgot', function (req, res, next) {
         },
         function (token, done) {
             userModel.findOne({ email: req.body.data.email }, function (err, user) {
-              if(err){
-                next(err);
-              }
-              else if (!user) {
-                   
+                if(err){
+                    next(err);
+                }
+                else if (!user) {
+                    
                     res.json({ success: false, message: "No account with that email address exists." });
                 }else {
-                
-
-                user.resetPasswordToken = token;
-                user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
-
-                user.save(function (err) {
-                    done(err, token, user);
-                });
-            }
+                    
+                    
+                    user.resetPasswordToken = token;
+                    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+                    
+                    user.save(function (err) {
+                        done(err, token, user);
+                    });
+                }
             });
         },
         function (token, user, done) {
@@ -134,26 +154,26 @@ router.post('/forgot', function (req, res, next) {
                 auth: {
                         user: Email,
                         pass: pass
-                }
-            });
-            var mailOptions = {
-                to: req.body.data.email,
-                from: Email,
-                subject: 'Password Reset',
-                text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
+                    }
+                });
+                var mailOptions = {
+                    to: req.body.data.email,
+                    from: Email,
+                    subject: 'Password Reset',
+                    text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
                     'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
                     'http://' + 'localhost:4200/forgot' + '/reset/' + token + '\n\n' +
                     'If you did not request this, please ignore this email and your password will remain unchanged.\n'
-            };
-            smtpTransport.sendMail(mailOptions, function (err,res) {
-               if(err){
-                   res.json({success:false , message :"Check the given email id"});
-               } else{
-                   res.json({ success :true ,message :"Email sent "})
-               }
-            });
-        }
-    ], function (err) {
+                };
+                smtpTransport.sendMail(mailOptions, function (err,res) {
+                    if(err){
+                        res.json({success:false , message :"Check the given email id"});
+                    } else{
+                        res.json({ success :true ,message :"Email sent "})
+                    }
+                });
+            }
+        ], function (err) {
         if (err) return next(err);
         res.redirect('/forgot');
     });
@@ -161,61 +181,63 @@ router.post('/forgot', function (req, res, next) {
 
 router.get('/reset/:token', function(req, res) {
     userModel.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
-      if (!user) {
-        res.json({ success: false, message: "Password reset token is invalid or has expired"});
+        if (!user) {
+            res.json({ success: false, message: "Password reset token is invalid or has expired"});
         }
     });
 });
-  
+
 router.post('/reset/:token', function(req, res) {
     async.waterfall([
-      function(done) {
-        userModel.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
-           if(err){
-               next(err);
-           }
-           else if (!user) {
-              debugger;
-             res.json({success:false, message:'Password reset token is invalid or has expired.'});
-          } else {
-            user.password = req.body.data.password;
-            user.resetPasswordToken = undefined;
-            user.resetPasswordExpires = undefined;
-            
-            user.save(function (err) {
-                done(err,user);    
-          });
-            user = user.email;
-            res.json({success: true, message:'Your password has been updated.'});
-          }
-          
-        });
-      },
-      function(user, done) {
-        var smtpTransport = nodemailer.createTransport( {
-            service: 'gmail',
-            host: 'smtp.gmail.com',
-            port: 465,
-            auth:  {
-            user: Email,
-            pass: pass
-          }
-        });
-        var mailOptions = {
-          to: user,
+        function(done) {
+            userModel.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
+                if(err){
+                    next(err);
+                }
+                else if (!user) {
+                    debugger;
+                    res.json({success:false, message:'Password reset token is invalid or has expired.'});
+                } else {
+                    user.password = req.body.data.password;
+                    user.resetPasswordToken = undefined;
+                    user.resetPasswordExpires = undefined;
+                    
+                    user.save(function (err) {
+                        done(err,user);    
+                    });
+                    user = user.email;
+                    res.json({success: true, message:'Your password has been updated.'});
+                }
+                
+            });
+        },
+        function(user, done) {
+            var smtpTransport = nodemailer.createTransport( {
+                service: 'gmail',
+                host: 'smtp.gmail.com',
+                port: 465,
+                auth:  {
+                    user: Email,
+                    pass: pass
+                }
+            });
+            var mailOptions = {
+                to: user,
           from: Email,
           subject: 'Your password has been changed',
           text: 'Hello,\n\n' +
-            'This is a confirmation that the password for your account ' + user + ' has just been changed.\n'
+          'This is a confirmation that the password for your account ' + user + ' has just been changed.\n'
         };
         smtpTransport.sendMail(mailOptions, function(err,res) {
             if(err){
-            res.json({success:false , message:"Kindly check your mail for instructions"})
+                res.json({success:false , message:"Kindly check your mail for instructions"})
             } else{
-              res.json({success:true,message:"Email Sent"})
+                res.json({success:true,message:"Email Sent"})
             }
         });
-      }
-    ],);
-  });
+    }
+],);
+});
 
+
+module.exports=router;
