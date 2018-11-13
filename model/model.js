@@ -10,14 +10,13 @@ const UserSchema = mongoose.Schema({
     password: String,
     resetPasswordToken: String,
     resetPasswordExpires: Date,
-    creditCard:Number,
-    debitCard:Number
     },
-
     google:{
         googleID:String,
         username:String
     },
+    creditCard:Number,
+    debitCard:Number
 });
 
 UserSchema.pre('save', function (next) {

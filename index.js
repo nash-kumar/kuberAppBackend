@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const ejs=require('ejs');
 const passport = require('passport');
 const passportSetup = require('./config/passport')
-
+const session=require('express-session');
 require('dotenv').config();
 app.use(express.json());
 const cors = require('cors');
@@ -30,7 +30,7 @@ app.use('/user', user)
 // set view engine
 // app.set('view engine', 'ejs');
 
-
+app.use(session({secret:'oasijdiasjdijoiaj62371hsadhadas',resave:false,saveUninitialized:true}))
 // create home route
 app.get('/', (req, res) => {
     res.render('home');
