@@ -3,7 +3,7 @@ const router=express.Router();
 const userModel=require('../model/model').userModel;
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
+const saltRounds=10;
 const async = require('async');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
@@ -16,11 +16,11 @@ router.post('/register', (req, res) => {
     console.log('POST IS WORKING!');
     if (req.body.data) {
         const user = userModel({
-            firstname: req.body.data.firstname,
-            lastname: req.body.data.surname,
+           local:{firstname: req.body.data.firstname,
+            lastname: req.body.data.lastname,
             email: req.body.data.email,
-            password: req.body.data.password,
-        });
+            password:bcrypt.hashSync(req.body.data.password, saltRounds)
+        }});
         user.save((err, result) => {
             if (err) {
                 res.status(500).send({
@@ -43,14 +43,13 @@ router.post('/login', (req, res) => {
     const email = req.body.data.email;
     var password = req.body.password;
     
-    userModel.findOne({ email: req.body.data.email }, function (err, userInfo) {
+    userModel.findOne({'local.email': req.body.data.email}, function (err, userInfo) {
         
         if (err) {
             next(err);
         } if (userInfo) {
-            if (bcrypt.compareSync(req.body.data.password, userInfo.password)) {
-                const token = jwt.sign({ id: userInfo._id }, req.app.get('secretKey'), { expiresIn: '1h' });
-                res.json({ success: true, message: "user found!!!", data: { user: userInfo, token: token } });
+            if (bcrypt.compareSync(req.body.data.password, userInfo.local.password)){
+                res.json({ success: true, message: "user found!!!", data: { user: userInfo } });
             } else {
                 res.json({ success: false, message: "Invalid email/password!!!" });
             }

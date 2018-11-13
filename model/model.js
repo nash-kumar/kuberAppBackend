@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 const UserSchema = mongoose.Schema({
-    firstname: String,
+   local:{ firstname: String,
     lastname: String,
     email: { type: String, unique: true },
     password: String,
@@ -12,11 +12,16 @@ const UserSchema = mongoose.Schema({
     resetPasswordExpires: Date,
     creditCard:Number,
     debitCard:Number
+    },
+
+    google:{
+        googleID:String,
+        username:String
+    },
 });
 
 UserSchema.pre('save', function (next) {
-    this.password = bcrypt.hashSync(this.password, saltRounds);
-    next();
+     next();
 });
 
 module.exports = mongoose.model('User', UserSchema);
