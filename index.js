@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 const ejs=require('ejs');
 const passport = require('passport');
 const passportSetup = require('./config/passport')
+const keys = require('./config/keys');
+const cookieSession = require('cookie-session');
 
 require('dotenv').config();
 app.use(express.json());
@@ -12,6 +14,14 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 app.set('secretKey', 'nodeRestApi');
 app.use(cors());
+
+app.use(cookieSession({
+  maxAge: 24*60*60*1000,
+  keys: keys.session.cookieKey
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
  mongoose.connect(process.env.DB_URL, { useNewUrlParser: true }, (err) => {
   if (err) console.log('Could not Connect');

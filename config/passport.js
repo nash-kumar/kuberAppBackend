@@ -4,7 +4,17 @@ const ExtractJwt = require('passport-jwt').ExtractJwt;
 const passport = require('passport');
 const GoogleStratergy = require('passport-google-oauth20');
 const keys = require('./keys')
-const userModel = require('../model/model').userModel;
+const User = require('../model/model');
+
+passport.serializeUser((user, done)=>{
+    done(null, user.id);
+});
+
+passport.deserializeUser((id, done)=>{
+    User.findById(id).then((user) => {
+        done(null, user);
+    });
+});
 
 passport.use(
     new GoogleStratergy({
@@ -12,35 +22,24 @@ passport.use(
         callbackURL: "http://localhost:4101/user/google/redirect",
         clientID: keys.google.clientID,
         clientSecret: keys.google.clientSecret
-    }, 
-    function(accessToken, refreshToken, profile, done) {
-        //check
-      process.nextTick(function(){
-            userModel.findOne({'google.googleID': profile.id}, function(err, user){
-                if(err)
-                    return done(err);
-                if(user)
-                console.log('user is',user);
-                    // return done(null, user);
-                    else{
-                const newUser = userModel({
-                    google:{
-                    googleID: profile.id,
-                    username: profile.displayName
-               } }); 
-               newUser.save((err, result) => {
-                   if (err) {
-                      console.log(err);
-                   } else if (result) {
-                       console.log('user added' + newUser)
-                   }
-               });
-
+    },(accessToken, refreshToken, profile, done)=>{
+        User.findOne({google:{googleID:profile.id}}).then((currentUser)=>{
+            if (err)
+            return done(err);
+            if(currentUser){
+                console.log('User is '+ currentUser);
+                done(null, currentUser);
+            }else{
+                new User({
+                    googleID:profile.id,
+                    username: profile.displayname
+                }).save().then((newUser) => {
+                    console.log("new user created"+ newUser);
+                    done(null, newUser);
+                });
             }
-
         });
-      })
- }))
+    } ) )
 
 
 

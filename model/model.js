@@ -25,6 +25,8 @@ UserSchema.pre('save', function (next) {
 });
 
 module.exports = mongoose.model('User', UserSchema);
+const User = mongoose.model('user', UserSchema);
+module.exports = User;
 
 const Users = mongoose.model('user', UserSchema);
 // UserSchema.plugin(AutoIncrement, { inc_field: 'id' });
