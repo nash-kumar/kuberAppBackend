@@ -10,10 +10,17 @@ const UserSchema = mongoose.Schema({
     password: String,
     resetPasswordToken: String,
     resetPasswordExpires: Date,
+    }, 
+    facebook         : {
+        id           : String,
+        token        : String,
+        name         : String,
+        email        : String
     },
     google:{
         googleID:String,
-        username:String
+        username:String,
+        email:String
     },
     creditCard:Number,
     debitCard:Number

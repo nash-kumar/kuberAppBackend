@@ -60,14 +60,30 @@ router.post('/login', (req, res) => {
         }
     });
 });
+router.get('/login', (req, res) => {
+    res.render('login', { user: req.user });
+});
+
+// auth logout
+router.get('/logout', (req, res) => {
+    // handle with passport
+    res.send('logging out');
+});
 
 
+router.get('/facebook', passport.authorize('facebook', {scope: ['public_profile', 'email']}));
+
+// handle the callback after facebook has authenticated the user
+router.get('/facebook/callback',
+    passport.authorize('facebook',(req,res) =>{
+        // res.send('You have done');
+    }));
 
 
 
 //auth with google
 router.get('/google', passport.authenticate('google', {
-    scope:['profile']
+    scope:['profile','email']
 }));
 
 //callback for 
