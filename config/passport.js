@@ -24,8 +24,6 @@ passport.use(
         clientSecret: keys.google.clientSecret
     },(accessToken, refreshToken, profile, done)=>{
         User.findOne({google:{googleID:profile.id}}).then((currentUser)=>{
-            if (err)
-            return done(err);
             if(currentUser){
                 console.log('User is '+ currentUser);
                 done(null, currentUser);

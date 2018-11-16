@@ -6,8 +6,9 @@ const ejs=require('ejs');
 const passport = require('passport');
 const passportSetup = require('./config/passport')
 const keys = require('./config/keys');
-const cookieSession = require('cookie-session');
+// const cookieSession = require('cookie-session');
 
+// const session=require('express-session');
 require('dotenv').config();
 app.use(express.json());
 const cors = require('cors');
@@ -15,10 +16,10 @@ const jwt = require('jsonwebtoken');
 app.set('secretKey', 'nodeRestApi');
 app.use(cors());
 
-app.use(cookieSession({
-  maxAge: 24*60*60*1000,
-  keys: keys.session.cookieKey
-}));
+// app.use(cookieSession({
+//   maxAge: 24*60*60*1000,
+//   keys: keys.session.cookieKey
+// }));
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -40,11 +41,11 @@ app.use('/user', user)
 // set view engine
 // app.set('view engine', 'ejs');
 
-
-// create home route
-app.get('/', (req, res) => {
-    res.render('home');
-});
+// app.use(session({secret:'oasijdiasjdijoiaj62371hsadhadas',resave:false,saveUninitialized:true}))
+// // create home route
+// app.get('/', (req, res) => {
+//     res.render('home');
+// });
 
 function validateUser(req, res, next) {
   jwt.verify(req.headers['x-access-token'], req.app.get('secretKey'), function (err, decoded) {

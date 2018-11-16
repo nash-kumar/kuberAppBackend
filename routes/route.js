@@ -16,11 +16,12 @@ router.post('/register', (req, res) => {
     console.log('POST IS WORKING!');
     if (req.body.data) {
         const user = userModel({
-           local:{firstname: req.body.data.firstname,
+            loginType: req.body.data.loginType,
+            firstname: req.body.data.firstname,
             lastname: req.body.data.lastname,
             email: req.body.data.email,
             password:bcrypt.hashSync(req.body.data.password, saltRounds)
-        }});
+        });
         user.save((err, result) => {
             if (err) {
                 res.status(500).send({
@@ -43,12 +44,13 @@ router.post('/login', (req, res) => {
     const email = req.body.data.email;
     var password = req.body.password;
     
-    userModel.findOne({'local.email': req.body.data.email}, function (err, userInfo) {
+    userModel.findOne({email: req.body.data.email}, function (err, userInfo) {
         
         if (err) {
             next(err);
         } if (userInfo) {
-            if (bcrypt.compareSync(req.body.data.password, userInfo.local.password)){
+            if (bcrypt.compareSync(req.body.data.password, userInfo.password)){
+                
                 res.json({ success: true, message: "user found!!!", data: { user: userInfo } });
             } else {
                 res.json({ success: false, message: "Invalid email/password!!!" });
@@ -60,48 +62,50 @@ router.post('/login', (req, res) => {
     });
 });
 
-// auth login
-router.get('/login', (req, res) => {
-    res.render('login', { user: req.user });
-});
 
-// auth logout
-router.get('/logout', (req, res) => {
-    // handle with passport
-    res.send('logging out');
-});
+
+
 
 //auth with google
-router.get('/google', passport.authenticate('google', {
-    scope:['profile']
-}));
+// router.get('/google', passport.authenticate('google', {
+//     scope:['profile']
+// }));
 
-//callback for 
-router.get('/google/redirect', passport.authenticate('google'), (req, res)=>{
-    res.send('You have done');
-});
+// //callback for 
+// router.get('/google/redirect', passport.authenticate('google'), (req, res)=>{
+//     res.send('You have done');
+// });
+
 //CARD-API
-router.post('/card', (req,res) => {
+router.post('/card', (req, res) => {
     if (req.body.data) {
-        const user = userModel({
+        let userData = userModel({
             creditCard: req.body.data.creditCard,
             debitCard: req.body.data.debitCard,
         });
-        user.save((err, result) => {
+        //
+        userModel.findOne({ creditCard: userData.creditCard, debitCard:userData.debitCard }, function (err, userInfo) {
             if (err) {
-                res.status(500).send({
-                    success: false,
-                    message: err.message
+                next(err);
+            } else if (userInfo !== null && userInfo.creditCard === userData.creditCard && userInfo.debitCard === userData.debitCard) {
+                res.status(201).send({ success: true, message: "User Already exists", userInfo });
+            } else {
+                userData.save((err, result) => {
+                    if (err) {
+                        res.status(500).send({
+                            success: false,
+                            message: "There should be a minimum or maximum of 16 numbers"
+                        });
+                    } else if (result) {
+                        res.status(201).send({ success: true, message: "Data added successfully", result });
+                    }
                 });
-            } else if (result) {
-                res.status(201).send({ success: true, message: "Data added successfully", result });
             }
         });
     } else {
         res.status(400).json({
             message: 'Please Enter any DATA!'
         });
-        
     }
 });
 
@@ -125,7 +129,7 @@ router.post('/forgot', function (req, res, next) {
             });
         },
         function (token, done) {
-            userModel.findOne({ email: req.body.data.email }, function (err, user) {
+            userModel.findOne({ email: req.body.email }, function (err, user) {
                 if(err){
                     next(err);
                 }
@@ -133,8 +137,6 @@ router.post('/forgot', function (req, res, next) {
                     
                     res.json({ success: false, message: "No account with that email address exists." });
                 }else {
-                    
-                    
                     user.resetPasswordToken = token;
                     user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
                     
@@ -156,7 +158,7 @@ router.post('/forgot', function (req, res, next) {
                     }
                 });
                 var mailOptions = {
-                    to: req.body.data.email,
+                    to: req.body.email,
                     from: Email,
                     subject: 'Password Reset',
                     text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
@@ -189,7 +191,7 @@ router.get('/reset/:token', function(req, res) {
 router.post('/reset/:token', function(req, res) {
     async.waterfall([
         function(done) {
-            userModel.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
+            userModel.findOne({ resetPasswordToken: req.params.token,resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
                 if(err){
                     next(err);
                 }
@@ -197,7 +199,7 @@ router.post('/reset/:token', function(req, res) {
                     debugger;
                     res.json({success:false, message:'Password reset token is invalid or has expired.'});
                 } else {
-                    user.password = req.body.data.password;
+                    user.password = req.body.password;
                     user.resetPasswordToken = undefined;
                     user.resetPasswordExpires = undefined;
                     
@@ -212,7 +214,7 @@ router.post('/reset/:token', function(req, res) {
         },
         function(user, done) {
             var smtpTransport = nodemailer.createTransport( {
-                service: 'gmail',
+                service: service,
                 host: 'smtp.gmail.com',
                 port: 465,
                 auth:  {
