@@ -4,26 +4,14 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 const UserSchema = mongoose.Schema({
-   local:{ firstname: String,
-    lastname: String,
-    email: { type: String, unique: true },
-    password: String,
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
-    }, 
-    facebook         : {
-        id           : String,
-        token        : String,
-        name         : String,
-        email        : String
-    },
-    google:{
-        googleID:String,
-        username:String,
-        email:String
-    },
-    creditCard:Number,
-    debitCard:Number
+            firstname: String,
+            lastname: String,
+            email: { type: String, unique: false},
+            password: String,
+            resetPasswordToken: String,
+            resetPasswordExpires: Date,
+            TypeofLogin:String,
+           
 });
 
 UserSchema.pre('save', function (next) {
