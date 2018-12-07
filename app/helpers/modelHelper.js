@@ -22,6 +22,7 @@ function addRecord(Model, newRecord, callback) {
  * @param {Object} options.populateQuery Populate Query
  * @param {*} callback
  */
+
 function findAll(Model, options = {}, callback) {
     recordsPerPage = parseInt(options.limit || recordsPerPage);
     if (options.all) {

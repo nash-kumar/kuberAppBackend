@@ -73,23 +73,23 @@ function alreadyRegistered(res, msg) {
     });
 }
 
-// function alreadyRegisteredWithGoogle(res, msg) {
-//     res.status(200).json({
-//         statusCode: 6,
-//         success: true,
-//         message: msg || 'User Already Registered Using Google',
-//         result: null
-//     });
-// }
+function alreadyRegisteredWithGoogle(res, msg) {
+    res.status(200).json({
+        statusCode: 6,
+        success: true,
+        message: msg || 'User Already Registered Using Google',
+        result: null
+    });
+}
 
-// function alreadyRegisteredWithFacebook(res, msg) {
-//     res.status(200).json({
-//         statusCode: 7,
-//         success: true,
-//         message: msg || 'User Already Registered Using Facebook',
-//         result: null
-//     });
-// }
+function alreadyRegisteredWithFacebook(res, msg) {
+    res.status(200).json({
+        statusCode: 7,
+        success: true,
+        message: msg || 'User Already Registered Using Facebook',
+        result: null
+    });
+}
 
 function unauthorized(res, msg) {
     res.status(401).json({
@@ -100,4 +100,4 @@ function unauthorized(res, msg) {
     });
 }
 
-module.exports = { missingBody, errorResponse, successPostResponse, successGetResponse, successPutResponse, successDeleteResponse, noRecordsFound, alreadyRegistered, unauthorized }
+module.exports = { missingBody, errorResponse, successPostResponse, successGetResponse, successPutResponse, successDeleteResponse, noRecordsFound, alreadyRegistered, alreadyRegisteredWithGoogle, alreadyRegisteredWithFacebook, unauthorized }
