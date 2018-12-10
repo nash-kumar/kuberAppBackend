@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const UserSchema = new Schema({
+const AdminSchema = new Schema({
     type: { type: [String], enum: ["native", "google", "facebook"], required: true },
     firstName: { type: String, default: null },
     lastName: { type: String, default: null },
@@ -8,9 +8,8 @@ const UserSchema = new Schema({
     password: { type: String, default: null },
     userId: { type: String, default: null },
     profileImage: { type: String, default: null },
-    role: { type: String, default: "user"},
-    recentlyViewedCharity: [{ type: Schema.Types.ObjectId, refer: 'users' }]//refer - collection Name
+    role: { type: String, default: "admin" }
 });
 
-const UserModel = mongoose.model('users', UserSchema);
-module.exports = { UserModel };
+const AdminModel = mongoose.model('admins', AdminSchema);
+module.exports = { AdminModel };
