@@ -18,7 +18,7 @@ function errorResponse(res, err, status, msg) {
 function successPostResponse(res, data, msg) {
     console.log('The Data is:', data);
     res.status(200).json({
-        statusCode: 200,
+        statusCode: 3,
         success: true,
         message: msg || 'Success',
         result: data
