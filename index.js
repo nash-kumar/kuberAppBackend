@@ -9,7 +9,7 @@ require('dotenv').config();
 
 mongoose.connect(process.env.DB_URL,{useNewUrlParser:true},(err)=>{
   if(err) console.log('Could not connect');
-  else console.log('Hey you have connected to it')
+  else console.log('connected')
 })
 
 

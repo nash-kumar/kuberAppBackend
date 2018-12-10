@@ -29,13 +29,15 @@ exports.card=(req,res)=>{
 };
 
 exports.Card_Get= (req,res)=>{
-    let query = cardModel.findOne({ id: req.params.userId });
+    let query = cardModel.find({ userId: req.params.id });
     query.exec((err, result) => {
         if (err) {
-            res.send(err);
-            res.status(404).send({ success: false, message: "Users Not Found" })
+            return res.send(err);
+        }
+        if(result.length === 0) {
+            return res.status(404).send({ success: false, message: "Users Not Found" });
         } else {
-            res.status(200).send({ success: true, message: "Succesfully fetched user details", result: result.cardNumber });
+            res.status(200).send({ success: true, message: "Succesfully fetched user details", result:result });
         }
     })
 }
